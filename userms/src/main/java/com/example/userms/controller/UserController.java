@@ -1,5 +1,6 @@
 package com.example.userms.controller;
 
+import com.example.userms.OrderServiceProxy;
 import com.example.userms.model.Order;
 import com.example.userms.model.OrderList;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
@@ -19,11 +20,13 @@ import java.util.List;
 @RequestMapping("/userms")
 public class UserController {
 
+    private OrderServiceProxy proxy;
+
     @GetMapping("/user/{id}/orders")
     @HystrixCommand(fallbackMethod = "handlingFallback")
     public ResponseEntity<List<Order>> getOrders(@PathVariable("id") String userId) {
-        RestTemplate template = new RestTemplate();
-        ResponseEntity<OrderList> orderList = template.getForEntity(URI.create("http://localhost:10001/orderms/orders/user/1"), OrderList.class);
+
+        ResponseEntity<OrderList> orderList = proxy.getOrders(userId);
         return new ResponseEntity<>(orderList.getBody()
                 .getOrders(), HttpStatus.OK);
     }
